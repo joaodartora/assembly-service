@@ -5,12 +5,12 @@ CREATE TABLE IF NOT EXISTS agenda (
   description VARCHAR(500) NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS 'session' (
+CREATE TABLE IF NOT EXISTS `session` (
   id INTEGER AUTO_INCREMENT NOT NULL PRIMARY KEY,
   agenda_id INTEGER NOT NULL,
   start_time DATETIME NOT NULL,
   end_time DATETIME NOT NULL,
-  result VARCHAR(3),
+  result VARCHAR(4),
   FOREIGN KEY (agenda_id) REFERENCES agenda(id)
 );
 
@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS vote (
   session_id INTEGER NOT NULL,
   vote VARCHAR(3) NOT NULL,
   associated_id INTEGER NOT NULL,
-  associated_cpf VARCHAR(15) NOT NULL,
-  FOREIGN KEY (session_id) REFERENCES 'session(id)'
+  associated_cpf VARCHAR(15),
+  FOREIGN KEY (session_id) REFERENCES `session`(id),
+  UNIQUE (session_id, associated_id)
 );

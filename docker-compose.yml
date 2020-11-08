@@ -13,11 +13,11 @@ services:
     volumes:
       - ~/var/lib/mysql
 
-  assembly-service:
-    build: .
-    ports:
-      - "8080:8080"
-    environment:
-      ASSEMBLY_DATABASE_URL: assembly-database
-    depends_on:
-      - assembly-database
+#  assembly-service:
+#    build: .
+#    ports:
+#      - "8080:8080"
+#    environment:
+#      ASSEMBLY_DATABASE_URL: assembly-database
+#    depends_on:
+#      - assembly-database
