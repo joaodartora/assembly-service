@@ -1,42 +1,62 @@
 package br.com.joaodartora.assemblyservice.service;
 
-import br.com.joaodartora.assemblyservice.dto.SessionDto;
-import br.com.joaodartora.assemblyservice.repository.AgendaRepository;
+import br.com.joaodartora.assemblyservice.mapper.SessionMapper;
 import br.com.joaodartora.assemblyservice.repository.SessionRepository;
-import br.com.joaodartora.assemblyservice.type.VoteChoiceEnum;
+import br.com.joaodartora.assemblyservice.repository.entity.SessionEntity;
+import br.com.joaodartora.assemblyservice.type.VotesResultEnum;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+
 @Service
 public class SessionService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SessionService.class);
-    private final AgendaRepository agendaRepository;
+    private final AgendaService agendaService;
     private final SessionRepository sessionRepository;
     private final ObjectMapper objectMapper;
 
-    public SessionService(AgendaRepository agendaRepository, SessionRepository sessionRepository, ObjectMapper objectMapper) {
-        this.agendaRepository = agendaRepository;
+    public SessionService(AgendaService agendaService, SessionRepository sessionRepository, ObjectMapper objectMapper) {
+        this.agendaService = agendaService;
         this.sessionRepository = sessionRepository;
         this.objectMapper = objectMapper;
     }
 
-    public Long openSession(SessionDto sessionDto) {
-//        get agenda
-//        salvar inicio de sessão
-        return null;
+    public void openSession(Long agendaId, Integer duration) {
+//        existsOpenSession(agendaId);
+        agendaService.get(agendaId);
+        LocalDateTime startTime = LocalDateTime.now();
+        LocalDateTime endTime = startTime.plusMinutes(duration.longValue());
+        SessionEntity sessionEntity = SessionMapper.buildEntity(agendaId, startTime, endTime);
+        sessionRepository.save(sessionEntity);
     }
 
-    public VoteChoiceEnum countVotes() {
-//        buscar sessão
-//        verificar se sessão já encerrou, caso não, lançar expcetion
-//        contabilizar votos
-//        salvar resultado no banco de dados
-//        enviar evento de encerramento de votação
-//        retornar resultado da votação
-        return null;
+    public SessionEntity getOpenSession(Long agendaId) {
+        return sessionRepository.findAllByAgendaId(agendaId)
+                .stream()
+                .filter(this::isSessionOpen)
+                .findFirst()
+                .orElseThrow(RuntimeException::new); // TODO: 08/11/2020 Tratar com exception personalizada para sessão já fechada.
+    }
+
+    public SessionEntity getClosedSession(Long agendaId) {
+        return sessionRepository.findAllByAgendaId(agendaId)
+                .stream()
+                .filter(session -> !isSessionOpen(session))
+                .findFirst()
+                .orElseThrow(RuntimeException::new); // TODO: 08/11/2020 Tratar com exception personalizada para sessão ainda aberta.
+    }
+
+    public void saveSessionResult(SessionEntity sessionEntity, VotesResultEnum result) {
+        sessionEntity.setResult(result);
+        sessionRepository.save(sessionEntity);
+    }
+
+    private Boolean isSessionOpen(SessionEntity session) {
+        return session.getEndTime().isAfter(LocalDateTime.now());
     }
 
 }

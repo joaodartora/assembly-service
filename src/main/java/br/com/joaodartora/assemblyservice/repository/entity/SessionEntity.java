@@ -1,6 +1,6 @@
 package br.com.joaodartora.assemblyservice.repository.entity;
 
-import br.com.joaodartora.assemblyservice.type.VoteChoiceEnum;
+import br.com.joaodartora.assemblyservice.type.VotesResultEnum;
 
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -20,7 +20,7 @@ public class SessionEntity {
     private LocalDateTime startTime;
     private LocalDateTime endTime;
     @Enumerated(EnumType.STRING)
-    private VoteChoiceEnum result;
+    private VotesResultEnum result;
 
     public Long getId() {
         return id;
@@ -54,11 +54,52 @@ public class SessionEntity {
         this.agendaId = agendaId;
     }
 
-    public VoteChoiceEnum getResult() {
+    public VotesResultEnum getResult() {
         return result;
     }
 
-    public void setResult(VoteChoiceEnum result) {
+    public void setResult(VotesResultEnum result) {
         this.result = result;
+    }
+
+    public static Builder with() {
+        return new Builder();
+    }
+
+    public static final class Builder {
+        private SessionEntity sessionEntity;
+
+        private Builder() {
+            sessionEntity = new SessionEntity();
+        }
+
+        public Builder id(Long id) {
+            sessionEntity.setId(id);
+            return this;
+        }
+
+        public Builder agendaId(Long agendaId) {
+            sessionEntity.setAgendaId(agendaId);
+            return this;
+        }
+
+        public Builder startTime(LocalDateTime startTime) {
+            sessionEntity.setStartTime(startTime);
+            return this;
+        }
+
+        public Builder endTime(LocalDateTime endTime) {
+            sessionEntity.setEndTime(endTime);
+            return this;
+        }
+
+        public Builder result(VotesResultEnum result) {
+            sessionEntity.setResult(result);
+            return this;
+        }
+
+        public SessionEntity build() {
+            return sessionEntity;
+        }
     }
 }

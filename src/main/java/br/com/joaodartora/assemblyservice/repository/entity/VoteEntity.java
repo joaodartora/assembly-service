@@ -18,8 +18,11 @@ public class VoteEntity {
     private Long sessionId;
     @Enumerated(EnumType.STRING)
     private VoteChoiceEnum vote;
-    private Integer associatedId;
+    private Long associatedId;
     private String associatedCpf;
+
+    public VoteEntity() {
+    }
 
     public Long getId() {
         return id;
@@ -45,11 +48,11 @@ public class VoteEntity {
         this.vote = vote;
     }
 
-    public Integer getAssociatedId() {
+    public Long getAssociatedId() {
         return associatedId;
     }
 
-    public void setAssociatedId(Integer associatedId) {
+    public void setAssociatedId(Long associatedId) {
         this.associatedId = associatedId;
     }
 
@@ -59,5 +62,46 @@ public class VoteEntity {
 
     public void setAssociatedCpf(String associatedCpf) {
         this.associatedCpf = associatedCpf;
+    }
+
+    public static Builder with() {
+        return new Builder();
+    }
+
+    public static final class Builder {
+        private VoteEntity voteEntity;
+
+        private Builder() {
+            voteEntity = new VoteEntity();
+        }
+
+        public Builder id(Long id) {
+            voteEntity.setId(id);
+            return this;
+        }
+
+        public Builder sessionId(Long sessionId) {
+            voteEntity.setSessionId(sessionId);
+            return this;
+        }
+
+        public Builder vote(VoteChoiceEnum vote) {
+            voteEntity.setVote(vote);
+            return this;
+        }
+
+        public Builder associatedId(Long associatedId) {
+            voteEntity.setAssociatedId(associatedId);
+            return this;
+        }
+
+        public Builder associatedCpf(String associatedCpf) {
+            voteEntity.setAssociatedCpf(associatedCpf);
+            return this;
+        }
+
+        public VoteEntity build() {
+            return voteEntity;
+        }
     }
 }
