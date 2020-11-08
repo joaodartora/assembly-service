@@ -5,9 +5,9 @@ import br.com.joaodartora.assemblyservice.repository.entity.VoteEntity;
 
 public class VoteMapper {
 
-    public static VoteEntity build(Long sessionId, VoteDto voteDto) {
+    public static VoteEntity build(Long agendaId, VoteDto voteDto) {
         return VoteEntity.with()
-                .sessionId(sessionId)
+                .agendaId(agendaId)
                 .vote(voteDto.getVote())
                 .associatedCpf(voteDto.getAssociated().getCpf())
                 .associatedId(voteDto.getAssociated().getId())

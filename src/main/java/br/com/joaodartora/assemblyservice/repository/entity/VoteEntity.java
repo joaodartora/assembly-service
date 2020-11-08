@@ -15,7 +15,7 @@ public class VoteEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private Long sessionId;
+    private Long agendaId;
     @Enumerated(EnumType.STRING)
     private VoteChoiceEnum vote;
     private Long associatedId;
@@ -32,12 +32,12 @@ public class VoteEntity {
         this.id = id;
     }
 
-    public Long getSessionId() {
-        return sessionId;
+    public Long getAgendaId() {
+        return agendaId;
     }
 
-    public void setSessionId(Long sessionId) {
-        this.sessionId = sessionId;
+    public void setAgendaId(Long agendaId) {
+        this.agendaId = agendaId;
     }
 
     public VoteChoiceEnum getVote() {
@@ -80,8 +80,8 @@ public class VoteEntity {
             return this;
         }
 
-        public Builder sessionId(Long sessionId) {
-            voteEntity.setSessionId(sessionId);
+        public Builder agendaId(Long agendaId) {
+            voteEntity.setAgendaId(agendaId);
             return this;
         }
 

@@ -16,10 +16,10 @@ CREATE TABLE IF NOT EXISTS `session` (
 
 CREATE TABLE IF NOT EXISTS vote (
   id INTEGER AUTO_INCREMENT NOT NULL PRIMARY KEY,
-  session_id INTEGER NOT NULL,
+  agenda_id INTEGER NOT NULL,
   vote VARCHAR(3) NOT NULL,
   associated_id INTEGER NOT NULL,
-  associated_cpf VARCHAR(15),
-  FOREIGN KEY (session_id) REFERENCES `session`(id),
-  UNIQUE (session_id, associated_id)
+  associated_cpf VARCHAR(14),
+  FOREIGN KEY (agenda_id) REFERENCES agenda(id),
+  UNIQUE (agenda_id, associated_id)
 );

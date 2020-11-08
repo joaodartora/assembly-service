@@ -33,21 +33,21 @@ public class VoteService {
     }
 
     public Long vote(Long agendaId, VoteDto voteDto) {
-        Long sessionId = sessionService.getOpenSession(agendaId).getId();
-        VoteEntity voteEntity = VoteMapper.build(sessionId, voteDto);
+        sessionService.getOpenSession(agendaId);
+        VoteEntity voteEntity = VoteMapper.build(agendaId, voteDto);
         return voteRepository.save(voteEntity).getId(); // TODO: 08/11/2020 tratar erro de voto duplicado
     }
     public AgendaResultsDto getResult(Long agendaId) {
         SessionEntity sessionEntity = sessionService.getClosedSession(agendaId);
-        VoteResultsDto voteResults = getVoteResults(sessionEntity.getId());
+        VoteResultsDto voteResults = getVoteResults(agendaId);
         VotesResultEnum result = defineAgendaResult(voteResults);
         sessionService.saveSessionResult(sessionEntity, result);
         // TODO: 08/11/2020 enviar evento de finalização de contagem
         return AgendaResultsMapper.build(result, voteResults);
     }
 
-    private VoteResultsDto getVoteResults(Long sessionId) {
-        List<VoteEntity> totalVotes = voteRepository.findAllBySessionId(sessionId);
+    private VoteResultsDto getVoteResults(Long agendaId) {
+        List<VoteEntity> totalVotes = voteRepository.findAllByAgendaId(agendaId);
         Long yesVotes = totalVotes.stream()
                 .filter(voteEntity -> VoteChoiceEnum.YES == voteEntity.getVote())
                 .count();

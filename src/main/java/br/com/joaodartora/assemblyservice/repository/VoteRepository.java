@@ -9,6 +9,6 @@ import java.util.List;
 @Repository
 public interface VoteRepository extends CrudRepository<VoteEntity, Long> {
 
-    List<VoteEntity> findAllBySessionId(Long sessionId);
+    List<VoteEntity> findAllByAgendaId(Long agendaId);
 
 }
