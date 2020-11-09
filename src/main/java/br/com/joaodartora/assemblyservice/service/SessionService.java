@@ -1,15 +1,19 @@
 package br.com.joaodartora.assemblyservice.service;
 
+import br.com.joaodartora.assemblyservice.exception.SessionAlreadyClosedException;
+import br.com.joaodartora.assemblyservice.exception.SessionAlreadyOpenException;
+import br.com.joaodartora.assemblyservice.exception.SessionNotFoundException;
 import br.com.joaodartora.assemblyservice.mapper.SessionMapper;
 import br.com.joaodartora.assemblyservice.repository.SessionRepository;
 import br.com.joaodartora.assemblyservice.repository.entity.SessionEntity;
 import br.com.joaodartora.assemblyservice.type.VotesResultEnum;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 public class SessionService {
@@ -17,16 +21,14 @@ public class SessionService {
     private static final Logger LOGGER = LoggerFactory.getLogger(SessionService.class);
     private final AgendaService agendaService;
     private final SessionRepository sessionRepository;
-    private final ObjectMapper objectMapper;
 
-    public SessionService(AgendaService agendaService, SessionRepository sessionRepository, ObjectMapper objectMapper) {
+    public SessionService(AgendaService agendaService, SessionRepository sessionRepository) {
         this.agendaService = agendaService;
         this.sessionRepository = sessionRepository;
-        this.objectMapper = objectMapper;
     }
 
     public void openSession(Long agendaId, Integer duration) {
-//        existsOpenSession(agendaId);
+        verifySessionNotExists(agendaId);
         agendaService.get(agendaId);
         LocalDateTime startTime = LocalDateTime.now();
         LocalDateTime endTime = startTime.plusMinutes(duration.longValue());
@@ -34,12 +36,15 @@ public class SessionService {
         sessionRepository.save(sessionEntity);
     }
 
-    public SessionEntity getOpenSession(Long agendaId) {
-        return sessionRepository.findAllByAgendaId(agendaId)
-                .stream()
+    public void validateOpenSession(Long agendaId) {
+        List<SessionEntity> sessions = sessionRepository.findAllByAgendaId(agendaId);
+        if (CollectionUtils.isEmpty(sessions))
+            throw new SessionNotFoundException();
+
+        sessions.stream()
                 .filter(this::isSessionOpen)
                 .findFirst()
-                .orElseThrow(RuntimeException::new); // TODO: 08/11/2020 Tratar com exception personalizada para sessão já fechada.
+                .orElseThrow(SessionAlreadyClosedException::new);
     }
 
     public SessionEntity getClosedSession(Long agendaId) {
@@ -47,7 +52,7 @@ public class SessionService {
                 .stream()
                 .filter(session -> !isSessionOpen(session))
                 .findFirst()
-                .orElseThrow(RuntimeException::new); // TODO: 08/11/2020 Tratar com exception personalizada para sessão ainda aberta.
+                .orElseThrow(SessionAlreadyOpenException::new);
     }
 
     public void saveSessionResult(SessionEntity sessionEntity, VotesResultEnum result) {
@@ -59,4 +64,11 @@ public class SessionService {
         return session.getEndTime().isAfter(LocalDateTime.now());
     }
 
+    private void verifySessionNotExists(Long agendaId) {
+        sessionRepository.findById(agendaId)
+                .ifPresent(sessionEntity -> {
+                    LOGGER.error("Session with ID {} is already open", agendaId);
+                    throw new SessionAlreadyOpenException();
+                });
+    }
 }

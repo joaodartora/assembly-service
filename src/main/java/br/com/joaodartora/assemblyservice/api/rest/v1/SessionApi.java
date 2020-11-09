@@ -1,7 +1,6 @@
 package br.com.joaodartora.assemblyservice.api.rest.v1;
 
 import br.com.joaodartora.assemblyservice.service.SessionService;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.slf4j.Logger;
@@ -19,18 +18,17 @@ public class SessionApi {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SessionApi.class);
     private final SessionService sessionService;
-    private final ObjectMapper objectMapper;
 
-    public SessionApi(SessionService sessionService, ObjectMapper objectMapper) {
+    public SessionApi(SessionService sessionService) {
         this.sessionService = sessionService;
-        this.objectMapper = objectMapper;
     }
 
     @PostMapping("/agenda/{agendaId}/open")
     @ApiOperation(value = "Open new voting session on an agenda.", notes = "Receives an agenda ID and optionally the duration of the new session, then open a new session", response = Void.class)
-    public ResponseEntity<Void> open(@PathVariable Long agendaId,
-                                       @ApiParam(value = "Duration of agenda's session in minutes.", defaultValue = "1")
-                                       @RequestParam(required = false, defaultValue = "1") Integer durationTime) {
+    public ResponseEntity<Void> open(@ApiParam(value = "ID of the agenda", required = true, example = "3108")
+                                     @PathVariable Long agendaId,
+                                     @ApiParam(value = "Duration of agenda's session in minutes.", defaultValue = "1", example = "60")
+                                     @RequestParam(required = false, defaultValue = "1") Integer durationTime) {
         LOGGER.info("Starting the opening of new voting session for the agenda {}, with duration of {} minutes", agendaId, durationTime);
         sessionService.openSession(agendaId, durationTime);
         LOGGER.info("Finishing the opening of new voting session for the agenda {}, with duration of {} minutes", agendaId, durationTime);

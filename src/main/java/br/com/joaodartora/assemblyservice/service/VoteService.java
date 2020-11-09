@@ -3,18 +3,21 @@ package br.com.joaodartora.assemblyservice.service;
 import br.com.joaodartora.assemblyservice.dto.AgendaResultsDto;
 import br.com.joaodartora.assemblyservice.dto.VoteDto;
 import br.com.joaodartora.assemblyservice.dto.VoteResultsDto;
+import br.com.joaodartora.assemblyservice.exception.AssociatedAlreadyVotedException;
+import br.com.joaodartora.assemblyservice.exception.NoVotesFoundException;
 import br.com.joaodartora.assemblyservice.mapper.AgendaResultsMapper;
 import br.com.joaodartora.assemblyservice.mapper.VoteMapper;
 import br.com.joaodartora.assemblyservice.mapper.VoteResultsMapper;
 import br.com.joaodartora.assemblyservice.repository.VoteRepository;
 import br.com.joaodartora.assemblyservice.repository.entity.SessionEntity;
 import br.com.joaodartora.assemblyservice.repository.entity.VoteEntity;
-import br.com.joaodartora.assemblyservice.type.VotesResultEnum;
 import br.com.joaodartora.assemblyservice.type.VoteChoiceEnum;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import br.com.joaodartora.assemblyservice.type.VotesResultEnum;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.util.List;
 
@@ -24,19 +27,23 @@ public class VoteService {
     private static final Logger LOGGER = LoggerFactory.getLogger(VoteService.class);
     private final SessionService sessionService;
     private final VoteRepository voteRepository;
-    private final ObjectMapper objectMapper;
 
-    public VoteService(SessionService sessionService, VoteRepository voteRepository, ObjectMapper objectMapper) {
+    public VoteService(SessionService sessionService, VoteRepository voteRepository) {
         this.sessionService = sessionService;
         this.voteRepository = voteRepository;
-        this.objectMapper = objectMapper;
     }
 
     public Long vote(Long agendaId, VoteDto voteDto) {
-        sessionService.getOpenSession(agendaId);
+        sessionService.validateOpenSession(agendaId);
         VoteEntity voteEntity = VoteMapper.build(agendaId, voteDto);
-        return voteRepository.save(voteEntity).getId(); // TODO: 08/11/2020 tratar erro de voto duplicado
+        try {
+            return voteRepository.save(voteEntity).getId();
+        } catch (DataIntegrityViolationException exception) {
+            LOGGER.error("Error when trying to save vote, associated already voted", exception);
+            throw new AssociatedAlreadyVotedException();
+        }
     }
+
     public AgendaResultsDto getResult(Long agendaId) {
         SessionEntity sessionEntity = sessionService.getClosedSession(agendaId);
         VoteResultsDto voteResults = getVoteResults(agendaId);
@@ -48,6 +55,9 @@ public class VoteService {
 
     private VoteResultsDto getVoteResults(Long agendaId) {
         List<VoteEntity> totalVotes = voteRepository.findAllByAgendaId(agendaId);
+        if (CollectionUtils.isEmpty(totalVotes))
+            throw new NoVotesFoundException();
+
         Long yesVotes = totalVotes.stream()
                 .filter(voteEntity -> VoteChoiceEnum.YES == voteEntity.getVote())
                 .count();
@@ -62,5 +72,4 @@ public class VoteService {
                 ? VotesResultEnum.YES
                 : VotesResultEnum.NO;
     }
-
 }

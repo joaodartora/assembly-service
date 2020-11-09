@@ -6,10 +6,10 @@ import br.com.joaodartora.assemblyservice.api.rest.v1.response.AgendaResultsResp
 import br.com.joaodartora.assemblyservice.dto.AgendaDto;
 import br.com.joaodartora.assemblyservice.dto.AgendaResultsDto;
 import br.com.joaodartora.assemblyservice.service.AgendaService;
-import br.com.joaodartora.assemblyservice.service.SessionService;
 import br.com.joaodartora.assemblyservice.service.VoteService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -49,7 +49,8 @@ public class AgendaApi {
 
     @GetMapping("/{agendaId}/result")
     @ApiOperation(value = "Get the agenda total votes count and results.", notes = "Receives an agenda ID, count the votes and return the totals and result", response = AgendaResultsResponse.class)
-    public ResponseEntity<AgendaResultsResponse> getResult(@PathVariable Long agendaId) {
+    public ResponseEntity<AgendaResultsResponse> getResult(@ApiParam(value = "ID of the agenda", required = true, example = "3108")
+                                                           @PathVariable Long agendaId) {
         LOGGER.info("Starting the agenda {} result processing.", agendaId);
         AgendaResultsDto resultsDto = voteService.getResult(agendaId);
         AgendaResultsResponse response = objectMapper.convertValue(resultsDto, AgendaResultsResponse.class);

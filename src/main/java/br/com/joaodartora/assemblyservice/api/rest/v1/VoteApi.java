@@ -3,10 +3,10 @@ package br.com.joaodartora.assemblyservice.api.rest.v1;
 import br.com.joaodartora.assemblyservice.api.rest.v1.request.VoteRequest;
 import br.com.joaodartora.assemblyservice.api.rest.v1.response.VoteResponse;
 import br.com.joaodartora.assemblyservice.dto.VoteDto;
-import br.com.joaodartora.assemblyservice.service.SessionService;
 import br.com.joaodartora.assemblyservice.service.VoteService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -33,7 +33,8 @@ public class VoteApi {
 
     @PostMapping("/agenda/{agendaId}")
     @ApiOperation(value = "Vote on a selected agenda.", notes = "Receives a vote request and the agenda ID, then register the associated vote.", response = VoteResponse.class)
-    public ResponseEntity<VoteResponse> vote(@PathVariable Long agendaId,
+    public ResponseEntity<VoteResponse> vote(@ApiParam(value = "ID of the agenda", required = true, example = "3108")
+                                             @PathVariable Long agendaId,
                                              @RequestBody @Valid VoteRequest request) {
         LOGGER.info("Starting the vote from the associated with ID: {} for the agenda: {}", request.getAssociated().getId(), agendaId);
         VoteDto voteDto = objectMapper.convertValue(request, VoteDto.class);
