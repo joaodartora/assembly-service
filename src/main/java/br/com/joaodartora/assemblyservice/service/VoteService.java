@@ -1,6 +1,7 @@
 package br.com.joaodartora.assemblyservice.service;
 
 import br.com.joaodartora.assemblyservice.dto.AgendaResultsDto;
+import br.com.joaodartora.assemblyservice.dto.SessionDto;
 import br.com.joaodartora.assemblyservice.dto.VoteDto;
 import br.com.joaodartora.assemblyservice.dto.VoteResultsDto;
 import br.com.joaodartora.assemblyservice.exception.AssociatedAlreadyVotedException;
@@ -9,7 +10,6 @@ import br.com.joaodartora.assemblyservice.mapper.AgendaResultsMapper;
 import br.com.joaodartora.assemblyservice.mapper.VoteMapper;
 import br.com.joaodartora.assemblyservice.mapper.VoteResultsMapper;
 import br.com.joaodartora.assemblyservice.repository.VoteRepository;
-import br.com.joaodartora.assemblyservice.repository.entity.SessionEntity;
 import br.com.joaodartora.assemblyservice.repository.entity.VoteEntity;
 import br.com.joaodartora.assemblyservice.type.VoteChoiceEnum;
 import br.com.joaodartora.assemblyservice.type.VotesResultEnum;
@@ -45,10 +45,10 @@ public class VoteService {
     }
 
     public AgendaResultsDto getResult(Long agendaId) {
-        SessionEntity sessionEntity = sessionService.getClosedSession(agendaId);
+        SessionDto session = sessionService.getClosedSession(agendaId);
         VoteResultsDto voteResults = getVoteResults(agendaId);
         VotesResultEnum result = defineAgendaResult(voteResults);
-        sessionService.saveSessionResult(sessionEntity, result);
+        sessionService.saveSessionResult(session, result);
         // TODO: 08/11/2020 enviar evento de finalização de contagem
         return AgendaResultsMapper.build(result, voteResults);
     }

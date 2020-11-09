@@ -1,5 +1,6 @@
 package br.com.joaodartora.assemblyservice.service;
 
+import br.com.joaodartora.assemblyservice.dto.SessionDto;
 import br.com.joaodartora.assemblyservice.exception.SessionAlreadyClosedException;
 import br.com.joaodartora.assemblyservice.exception.SessionAlreadyOpenException;
 import br.com.joaodartora.assemblyservice.exception.SessionNotFoundException;
@@ -47,21 +48,18 @@ public class SessionService {
                 .orElseThrow(SessionAlreadyClosedException::new);
     }
 
-    public SessionEntity getClosedSession(Long agendaId) {
+    public SessionDto getClosedSession(Long agendaId) {
         return sessionRepository.findAllByAgendaId(agendaId)
                 .stream()
                 .filter(session -> !isSessionOpen(session))
                 .findFirst()
+                .map(SessionMapper::buildDtoFromEntity)
                 .orElseThrow(SessionAlreadyOpenException::new);
     }
 
-    public void saveSessionResult(SessionEntity sessionEntity, VotesResultEnum result) {
-        sessionEntity.setResult(result);
-        sessionRepository.save(sessionEntity);
-    }
-
-    private Boolean isSessionOpen(SessionEntity session) {
-        return session.getEndTime().isAfter(LocalDateTime.now());
+    public void saveSessionResult(SessionDto sessionDto, VotesResultEnum result) {
+        sessionDto.setResult(result);
+        sessionRepository.save(SessionMapper.buildEntityFromDto(sessionDto));
     }
 
     private void verifySessionNotExists(Long agendaId) {
@@ -71,4 +69,9 @@ public class SessionService {
                     throw new SessionAlreadyOpenException();
                 });
     }
+
+    private Boolean isSessionOpen(SessionEntity session) {
+        return session.getEndTime().isAfter(LocalDateTime.now());
+    }
+
 }
