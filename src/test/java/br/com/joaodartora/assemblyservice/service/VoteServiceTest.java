@@ -1,16 +1,11 @@
 package br.com.joaodartora.assemblyservice.service;
 
-import br.com.joaodartora.assemblyservice.dto.AgendaDto;
 import br.com.joaodartora.assemblyservice.dto.AgendaResultsDto;
 import br.com.joaodartora.assemblyservice.dto.SessionDto;
-import br.com.joaodartora.assemblyservice.exception.AgendaNotFoundException;
 import br.com.joaodartora.assemblyservice.exception.AssociatedAlreadyVotedException;
 import br.com.joaodartora.assemblyservice.exception.NoVotesFoundException;
 import br.com.joaodartora.assemblyservice.repository.VoteRepository;
-import br.com.joaodartora.assemblyservice.repository.entity.AgendaEntity;
-import br.com.joaodartora.assemblyservice.repository.entity.SessionEntity;
 import br.com.joaodartora.assemblyservice.repository.entity.VoteEntity;
-import br.com.joaodartora.assemblyservice.stub.AgendaStub;
 import br.com.joaodartora.assemblyservice.stub.SessionStub;
 import br.com.joaodartora.assemblyservice.stub.VoteStub;
 import br.com.joaodartora.assemblyservice.type.VoteChoiceEnum;
@@ -38,15 +33,18 @@ public class VoteServiceTest {
     private final VoteService voteService;
     private final SessionService sessionService;
     private final VoteRepository voteRepository;
+    private final AssociatedService associatedService;
 
     public VoteServiceTest() {
         this.voteRepository = mock(VoteRepository.class);
         this.sessionService = mock(SessionService.class);
-        this.voteService = new VoteService(sessionService, voteRepository);
+        this.associatedService = mock(AssociatedService.class);
+        this.voteService = new VoteService(sessionService, voteRepository, associatedService);
     }
 
     @Test
     void voteWithSuccessShouldReturnNewVoteReceiptNumber() {
+        doNothing().when(associatedService).verifyAssociatedPermissionToVote("24440570019");
         doNothing().when(sessionService).validateOpenSession(3131L);
         when(voteRepository.save(any(VoteEntity.class))).thenReturn(VoteStub.createEntityWithVote(VoteChoiceEnum.YES));
 
@@ -67,6 +65,7 @@ public class VoteServiceTest {
 
     @Test
     void voteWithDataIntegrityViolationExceptionFromDatabaseShouldThrowAssociatedAlreadyVotedException() {
+        doNothing().when(associatedService).verifyAssociatedPermissionToVote("24440570019");
         doNothing().when(sessionService).validateOpenSession(3131L);
         when(voteRepository.save(any(VoteEntity.class))).thenThrow(new DataIntegrityViolationException("Duplicated key"));
 

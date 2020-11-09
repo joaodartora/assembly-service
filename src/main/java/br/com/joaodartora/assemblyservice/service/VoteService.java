@@ -27,13 +27,16 @@ public class VoteService {
     private static final Logger LOGGER = LoggerFactory.getLogger(VoteService.class);
     private final SessionService sessionService;
     private final VoteRepository voteRepository;
+    private final AssociatedService associatedService;
 
-    public VoteService(SessionService sessionService, VoteRepository voteRepository) {
+    public VoteService(SessionService sessionService, VoteRepository voteRepository, AssociatedService associatedService) {
         this.sessionService = sessionService;
         this.voteRepository = voteRepository;
+        this.associatedService = associatedService;
     }
 
     public Long vote(Long agendaId, VoteDto voteDto) {
+        associatedService.verifyAssociatedPermissionToVote(voteDto.getAssociated().getCpf());
         sessionService.validateOpenSession(agendaId);
         VoteEntity voteEntity = VoteMapper.build(agendaId, voteDto);
         try {
