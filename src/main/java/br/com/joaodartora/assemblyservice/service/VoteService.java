@@ -45,7 +45,7 @@ public class VoteService {
         try {
             return voteRepository.save(voteEntity).getId();
         } catch (DataIntegrityViolationException exception) {
-            LOGGER.error("Error when trying to save vote, associated already voted", exception);
+            LOGGER.error("Error when trying to save vote, associated with CPF {} already voted", voteDto.getAssociated().getCpf(), exception);
             throw new AssociatedAlreadyVotedException();
         }
     }
@@ -61,8 +61,10 @@ public class VoteService {
 
     private VoteResultsDto getVoteResults(Long agendaId) {
         List<VoteEntity> totalVotes = voteRepository.findAllByAgendaId(agendaId);
-        if (CollectionUtils.isEmpty(totalVotes))
+        if (CollectionUtils.isEmpty(totalVotes)){
+            LOGGER.info("No votes found fot the agenda {}", agendaId);
             throw new NoVotesFoundException();
+        }
 
         Long yesVotes = totalVotes.stream()
                 .filter(voteEntity -> VoteChoiceEnum.YES == voteEntity.getVote())
