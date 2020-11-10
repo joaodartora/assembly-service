@@ -9,6 +9,7 @@ import br.com.joaodartora.assemblyservice.exception.NoVotesFoundException;
 import br.com.joaodartora.assemblyservice.mapper.AgendaResultsMapper;
 import br.com.joaodartora.assemblyservice.mapper.VoteMapper;
 import br.com.joaodartora.assemblyservice.mapper.VoteResultsMapper;
+import br.com.joaodartora.assemblyservice.producer.AgendaResultProducer;
 import br.com.joaodartora.assemblyservice.repository.VoteRepository;
 import br.com.joaodartora.assemblyservice.repository.entity.VoteEntity;
 import br.com.joaodartora.assemblyservice.type.VoteChoiceEnum;
@@ -28,11 +29,13 @@ public class VoteService {
     private final SessionService sessionService;
     private final VoteRepository voteRepository;
     private final AssociatedService associatedService;
+    private final AgendaResultProducer agendaResultProducer;
 
-    public VoteService(SessionService sessionService, VoteRepository voteRepository, AssociatedService associatedService) {
+    public VoteService(SessionService sessionService, VoteRepository voteRepository, AssociatedService associatedService, AgendaResultProducer agendaResultProducer) {
         this.sessionService = sessionService;
         this.voteRepository = voteRepository;
         this.associatedService = associatedService;
+        this.agendaResultProducer = agendaResultProducer;
     }
 
     public Long vote(Long agendaId, VoteDto voteDto) {
@@ -52,8 +55,8 @@ public class VoteService {
         VoteResultsDto voteResults = getVoteResults(agendaId);
         VotesResultEnum result = defineAgendaResult(voteResults);
         sessionService.saveSessionResult(session, result);
-        // TODO: 08/11/2020 enviar evento de finalização de contagem
-        return AgendaResultsMapper.build(result, voteResults);
+        agendaResultProducer.sendAgendaResultEvent(AgendaResultsMapper.buildEvent(session, voteResults, result));
+        return AgendaResultsMapper.buildDto(result, voteResults);
     }
 
     private VoteResultsDto getVoteResults(Long agendaId) {

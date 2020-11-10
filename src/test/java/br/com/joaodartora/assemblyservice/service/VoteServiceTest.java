@@ -4,6 +4,8 @@ import br.com.joaodartora.assemblyservice.dto.AgendaResultsDto;
 import br.com.joaodartora.assemblyservice.dto.SessionDto;
 import br.com.joaodartora.assemblyservice.exception.AssociatedAlreadyVotedException;
 import br.com.joaodartora.assemblyservice.exception.NoVotesFoundException;
+import br.com.joaodartora.assemblyservice.producer.AgendaResultProducer;
+import br.com.joaodartora.assemblyservice.producer.event.AgendaResultsEvent;
 import br.com.joaodartora.assemblyservice.repository.VoteRepository;
 import br.com.joaodartora.assemblyservice.repository.entity.VoteEntity;
 import br.com.joaodartora.assemblyservice.stub.SessionStub;
@@ -34,12 +36,14 @@ public class VoteServiceTest {
     private final SessionService sessionService;
     private final VoteRepository voteRepository;
     private final AssociatedService associatedService;
+    private final AgendaResultProducer agendaResultProducer;
 
     public VoteServiceTest() {
         this.voteRepository = mock(VoteRepository.class);
         this.sessionService = mock(SessionService.class);
         this.associatedService = mock(AssociatedService.class);
-        this.voteService = new VoteService(sessionService, voteRepository, associatedService);
+        this.agendaResultProducer = mock(AgendaResultProducer.class);
+        this.voteService = new VoteService(sessionService, voteRepository, associatedService, agendaResultProducer);
     }
 
     @Test
@@ -79,12 +83,16 @@ public class VoteServiceTest {
         when(sessionService.getClosedSession(3131L)).thenReturn(SessionStub.createDto());
         when(voteRepository.findAllByAgendaId(3131L)).thenReturn(VoteStub.createEntitiesListWithYesWinning());
         doNothing().when(sessionService).saveSessionResult(any(SessionDto.class), any(VotesResultEnum.class));
+        doNothing().when(agendaResultProducer).sendAgendaResultEvent(any(AgendaResultsEvent.class));
 
         AgendaResultsDto result = voteService.getResult(3131L);
 
         ArgumentCaptor<SessionDto> dtoCaptor = ArgumentCaptor.forClass(SessionDto.class);
+        ArgumentCaptor<AgendaResultsEvent> eventCaptor = ArgumentCaptor.forClass(AgendaResultsEvent.class);
         verify(sessionService, times(1)).saveSessionResult(dtoCaptor.capture(), eq(VotesResultEnum.YES));
+        verify(agendaResultProducer, times(1)).sendAgendaResultEvent(eventCaptor.capture());
         SessionDto capturedDto = dtoCaptor.getValue();
+        AgendaResultsEvent capturedEvent = eventCaptor.getValue();
 
         assertAll("Assert all method fields",
                 () -> assertAll("Assert result fields",
@@ -97,7 +105,14 @@ public class VoteServiceTest {
                         () -> assertEquals(3131L, capturedDto.getAgendaId()),
                         () -> assertEquals("2020-11-08T09:19:37.474372", capturedDto.getStartTime().toString()),
                         () -> assertEquals("2020-11-08T09:49:37.474372", capturedDto.getEndTime().toString()),
-                        () -> assertNull(capturedDto.getResult())));
+                        () -> assertNull(capturedDto.getResult())),
+                () -> assertAll("Assert capturedEvent fields",
+                        () -> assertEquals(1L, capturedEvent.getSessionId()),
+                        () -> assertEquals(3131L, capturedEvent.getAgendaId()),
+                        () -> assertEquals(2L, capturedEvent.getYesVotes()),
+                        () -> assertEquals(1L, capturedEvent.getNoVotes()),
+                        () -> assertEquals(3L, capturedEvent.getTotalVotes()),
+                        () -> assertEquals(VotesResultEnum.YES, capturedEvent.getResult())));
     }
 
     @Test
@@ -105,6 +120,7 @@ public class VoteServiceTest {
         when(sessionService.getClosedSession(3131L)).thenReturn(SessionStub.createDto());
         when(voteRepository.findAllByAgendaId(3131L)).thenReturn(VoteStub.createEntitiesListWithNoWinning());
         doNothing().when(sessionService).saveSessionResult(any(SessionDto.class), any(VotesResultEnum.class));
+        doNothing().when(agendaResultProducer).sendAgendaResultEvent(any(AgendaResultsEvent.class));
 
         AgendaResultsDto result = voteService.getResult(3131L);
 
@@ -121,6 +137,7 @@ public class VoteServiceTest {
         when(sessionService.getClosedSession(3131L)).thenReturn(SessionStub.createDto());
         when(voteRepository.findAllByAgendaId(3131L)).thenReturn(VoteStub.createEntitiesListWithDraw());
         doNothing().when(sessionService).saveSessionResult(any(SessionDto.class), any(VotesResultEnum.class));
+        doNothing().when(agendaResultProducer).sendAgendaResultEvent(any(AgendaResultsEvent.class));
 
         AgendaResultsDto result = voteService.getResult(3131L);
 
