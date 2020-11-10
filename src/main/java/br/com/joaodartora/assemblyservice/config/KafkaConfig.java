@@ -18,14 +18,14 @@ import java.util.Map;
 public class KafkaConfig {
 
     @Value("${spring.kafka.bootstrap-servers}")
-    private String bootsrapServers;
+    private String bootstrapServers;
 
     @Bean
     public Map<String, Object> producerConfigs() {
         Map<String, Object> producerProps = new HashMap<>();
 
         // Basic Producer Configs
-        producerProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootsrapServers);
+        producerProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         producerProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         producerProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
 
