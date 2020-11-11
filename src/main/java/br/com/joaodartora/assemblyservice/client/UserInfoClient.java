@@ -27,13 +27,13 @@ public class UserInfoClient {
 
     public CpfValidationResponse getCpfValidationToVote(String cpf) {
         String buildedUrl = buildGetCpfValidationUrl(userInfoUrl, cpf);
-        LOGGER.info("Iniciando {} para URL [{}] para validar o CPF {}", HttpMethod.GET, buildedUrl, cpf);
+        LOGGER.info("Starting {} for the URL [{}] to validate CPF {}", HttpMethod.GET, buildedUrl, cpf);
         try {
             CpfValidationResponse response = restTemplate.getForObject(buildedUrl, CpfValidationResponse.class);
-            LOGGER.info("Finalizando com sucesso {} para URL [{}] para validar o CPF {}", HttpMethod.GET, buildedUrl, cpf);
+            LOGGER.info("Finishing with success {} to the URL [{}] to validate CPF {}", HttpMethod.GET, buildedUrl, cpf);
             return response;
         } catch (HttpClientErrorException exception) {
-            LOGGER.info("Erro com status {} e mensagem {} no request para URL [{}] de validação do CPF {}", exception.getStatusCode(), exception.getMessage(), buildedUrl, cpf);
+            LOGGER.info("Error with status {} and message {} on request to URL [{}] to validate CPF {}", exception.getStatusCode(), exception.getMessage(), buildedUrl, cpf);
             if (HttpStatus.NOT_FOUND == exception.getStatusCode())
                 throw new InvalidCpfException();
             throw new ClientException(exception);
