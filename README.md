@@ -20,14 +20,14 @@
 
 #### Running with script
 
-1. Give permission to execute on the starting script with ```chmod +x start-script.sh```
+1. Give permission to execute on the starting script with ```chmod +x starting-script.sh```
 2. Execute the starting script with ```./starting-script.sh```
 
 #### Running manually
 
 1. Build the project with ```./gradlew clean build```
 2. Run automated tests with ```./gradlew clean test```
-3. Get Kafka up locally with ```./start-kafka.sh```
+3. Get Kafka up locally with ```chmod +x start-kafka.sh && ./start-kafka.sh```
 4. Build docker images with ```docker-compose build```
 5. Run docker images with ```docker-compose up```
 
