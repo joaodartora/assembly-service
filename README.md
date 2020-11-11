@@ -41,4 +41,12 @@
 
 ## Tech Choices
 
-- 
+- **Java 11**: Java is a stable and power language to build microservices, the version 11 of Java brings a lot of performance and security improvements over version 8.
+- **JUnit 5**: The latest version brings some good features like assertAll() and assertThrows(), that gives us more power on unit testing. 
+- **SpringBoot 2.3.5:** SpringBoot is a complete framework to build cloud native applications easily, having a wide range of integrations with different tools.  
+- **Gradle 6.6.1:** Gradle is a robust build tool, which make possible to run builds scripts easily.
+- **Swagger 2.9.2:** Swagger is probably one of the best documentation libs and widely used.
+- **Apache Kafka 2.5.0**: Apache Kafka is a very powerful data processing platform, it is highly scalable and easily configurable at the consumer / producer level. 
+- **MySql 8**: The MySQL database is one of the most stable today, I chose it because it is easily configurable and allows a certain level of relationship between data.
+- **Docker/Docker Compose**: Docker is probably the most famous container tool in the world, it helps a lot on building and deploying any application. 
+- **Gatling Test**: Gatling is a very good tool to execute load and performance tests on a application, it's easy to configure and to run.
